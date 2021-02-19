@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ping-destination-deployment
+  labels:
+    app: ping-destination
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping-destination
+  template:
+    metadata:
+      labels:
+        app: ping-destination
+    spec:
+      nodeName: <node name>
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      containers:
+      - name: ping-destination
+        image: busybox
+        command: ['/bin/sh', '-c', 'sleep infinity']
+      terminationGracePeriodSeconds: 0
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ping-sources
+  labels:
+    app: ping-source
+spec:
+  selector:
+    matchLabels:
+      app: ping-source
+  template:
+    metadata:
+      labels:
+        app: ping-source
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      containers:
+      - name: ping-source
+        image: busybox
+        command: ['/bin/sh', '-c', 'sleep infinity']
+      terminationGracePeriodSeconds: 0
